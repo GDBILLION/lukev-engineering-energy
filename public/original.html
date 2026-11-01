@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUKEV Engineering & Energy Limited | NDT, Equipment Leasing & Solar Energy</title>
+<meta name="description" content="LUKEV Engineering & Energy Limited provides Non-Destructive Testing, NDT equipment leasing, and solar energy solutions in Nigeria.">
+<meta name="theme-color" content="#09090b">
+<meta property="og:title" content="LUKEV Engineering & Energy Limited">
+<meta property="og:description" content="NDT. Equipment Leasing. Solar Energy.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_NG">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["Inter","ui-sans-serif","system-ui","sans-serif"],
+        mono: ["JetBrains Mono","ui-monospace","SFMono-Regular","monospace"]
+      },
+      boxShadow: {
+        panel: "0 30px 90px rgba(0,0,0,.42)",
+        glow: "0 0 90px rgba(34,211,238,.10)"
+      }
+    }
+  }
+}
+</script>
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+body{background:#09090b;color:#f4f4f5}
+.mesh{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(to bottom,#000,transparent 72%)}
+.noise::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E")}
+.glass{background:rgba(24,24,27,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+/* Cinematic scroll reveals: the existing .reveal class and observer trigger are preserved. */
+.reveal{
+  opacity:0;
+  transform:translate3d(0,22px,0);
+  transition:
+    opacity 1.45s cubic-bezier(.16,1,.3,1),
+    transform 1.45s cubic-bezier(.16,1,.3,1);
+  will-change:opacity,transform;
+}
+.reveal.visible{opacity:1;transform:translate3d(0,0,0);will-change:auto}
+
+/* Subtle sequencing for the content already grouped inside each reveal section. */
+.reveal > *{
+  opacity:0;
+  transform:translate3d(0,14px,0);
+  transition-property:opacity,transform;
+  transition-duration:1.25s;
+  transition-timing-function:cubic-bezier(.16,1,.3,1);
+}
+.reveal.visible > *{opacity:1;transform:translate3d(0,0,0)}
+.reveal > :nth-child(1){transition-delay:.08s}
+.reveal > :nth-child(2){transition-delay:.18s}
+.reveal > :nth-child(3){transition-delay:.28s}
+.reveal > :nth-child(4){transition-delay:.38s}
+.reveal > :nth-child(5){transition-delay:.48s}
+.reveal > :nth-child(6){transition-delay:.56s}
+.reveal > :nth-child(n+7){transition-delay:.62s}
+
+/* Keep the motion deliberate on smaller screens without allowing a long cascade. */
+@media (max-width:640px){
+  .reveal{transition-duration:1.3s}
+  .reveal > *{transition-duration:1.2s}
+  .reveal > :nth-child(1){transition-delay:.06s}
+  .reveal > :nth-child(2){transition-delay:.12s}
+  .reveal > :nth-child(3){transition-delay:.18s}
+  .reveal > :nth-child(4){transition-delay:.24s}
+  .reveal > :nth-child(5){transition-delay:.30s}
+  .reveal > :nth-child(6){transition-delay:.36s}
+  .reveal > :nth-child(n+7){transition-delay:.40s}
+}
+.img-card img{transition:transform .7s cubic-bezier(.2,.8,.2,1),filter .7s ease}
+.img-card:hover img{transform:scale(1.045);filter:saturate(1.08)}
+.float{animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.pulse-dot{animation:pulseDot 2.4s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal,.reveal.visible{transition:none;opacity:1;transform:none;will-change:auto}
+  .reveal > *, .reveal.visible > *{transition:none;opacity:1;transform:none}
+  .float,.pulse-dot{animation:none}
+}
+</style>
+</head>
+<body class="min-h-screen overflow-x-hidden font-sans antialiased">
+<div class="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_72%_8%,rgba(8,145,178,.14),transparent_28rem),radial-gradient(circle_at_12%_38%,rgba(16,185,129,.08),transparent_30rem),#09090b]"></div>
+<div class="fixed inset-0 -z-10 mesh"></div>
+
+<header class="fixed inset-x-0 top-0 z-50">
+  <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6">
+    <nav class="glass flex h-16 items-center justify-between rounded-2xl border border-white/10 px-4 shadow-2xl shadow-black/20 sm:px-6" aria-label="Primary">
+      <a href="#" class="flex min-w-0 items-center gap-3" aria-label="LUKEV Engineering and Energy Limited home">
+        <img src="assets/lukev-logo.png" alt="LUKEV Engineering and Energy Limited logo" class="h-9 w-auto max-w-[190px] object-contain">
+      </a>
+      <div id="desktopNav" class="hidden items-center gap-7 text-sm text-zinc-300 md:flex">
+        <a class="transition hover:text-white" href="#ndt">NDT</a>
+        <a class="transition hover:text-white" href="#equipment">Equipment Leasing</a>
+        <a class="transition hover:text-white" href="#solar">Solar Energy</a>
+        <a class="transition hover:text-white" href="#about">About</a>
+        <a class="transition hover:text-white" href="#contact">Contact</a>
+      </div>
+      <a data-wa="general" href="#" class="hidden rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-zinc-950 transition hover:bg-cyan-100 md:inline-flex">Talk to an Expert</a>
+      <button id="menuButton" class="grid h-10 w-10 place-items-center rounded-xl border border-white/10 text-zinc-200 md:hidden" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open navigation menu">
+        <span class="text-lg">☰</span>
+      </button>
+    </nav>
+    <div id="mobileMenu" class="glass mt-2 hidden rounded-2xl border border-white/10 p-3 shadow-2xl md:hidden">
+      <div class="grid gap-1 text-sm text-zinc-300">
+        <a class="rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white" href="#ndt">NDT</a>
+        <a class="rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white" href="#equipment">Equipment Leasing</a>
+        <a class="rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white" href="#solar">Solar Energy</a>
+        <a class="rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white" href="#about">About</a>
+        <a class="rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white" href="#contact">Contact</a>
+        <a data-wa="general" href="#" class="mt-2 rounded-xl bg-white px-4 py-3 text-center font-semibold text-zinc-950">Talk to an Expert</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="noise relative isolate overflow-hidden pt-36 sm:pt-44">
+  <div class="mx-auto grid max-w-7xl items-center gap-14 px-4 pb-24 sm:px-6 lg:grid-cols-[.92fr_1.08fr] lg:gap-16 lg:pb-32">
+    <div class="reveal">
+      <div class="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[.2em] text-emerald-200">
+        <span class="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-300"></span> Engineering • Inspection • Energy
+      </div>
+      <h1 class="max-w-3xl text-5xl font-bold tracking-[-.055em] sm:text-6xl lg:text-7xl">Engineering reliability across <span class="text-zinc-400">inspection, equipment and energy.</span></h1>
+      <p class="mt-7 max-w-2xl text-base leading-8 text-zinc-300 sm:text-lg">LUKEV Engineering & Energy Limited provides professional Non-Destructive Testing, NDT equipment leasing, and solar energy solutions for critical projects and infrastructure.</p>
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+        <a data-wa="general" href="#" class="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 transition hover:bg-cyan-100">Talk to an Expert <span class="ml-2">↗</span></a>
+        <a href="#services" class="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[.03] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-white/[.06]">Explore capabilities</a>
+      </div>
+      <div class="mt-10 flex flex-wrap gap-x-7 gap-y-3 font-mono text-[10px] uppercase tracking-[.16em] text-zinc-500">
+        <span>NDT & Inspection</span><span>Equipment Leasing</span><span>Solar Energy</span>
+      </div>
+    </div>
+
+    <div class="reveal lg:pl-4">
+      <div class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900 shadow-panel">
+        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=92" alt="Commercial solar installation viewed across a modern energy site" class="h-[30rem] w-full object-cover sm:h-[35rem]" fetchpriority="high">
+        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/10 to-transparent"></div>
+        <div class="absolute left-5 right-5 top-5 flex items-start justify-between">
+          <div class="glass rounded-xl border border-white/10 px-4 py-3">
+            <div class="font-mono text-[9px] uppercase tracking-[.18em] text-zinc-500">LUKEV / Engineering Operations</div>
+            <div class="mt-1 text-sm font-semibold">Inspection • Assets • Energy</div>
+          </div>
+          <div class="float hidden rounded-full border border-white/10 bg-black/30 px-3 py-2 font-mono text-[9px] uppercase tracking-widest text-zinc-300 sm:block">RC 8591018</div>
+        </div>
+        <div class="absolute bottom-5 left-5 right-5 grid gap-2 sm:grid-cols-3">
+          <div class="glass rounded-xl border border-white/10 px-4 py-3"><div class="font-mono text-[9px] uppercase tracking-widest text-zinc-500">01</div><div class="mt-1 text-sm font-medium">NDT Inspection</div></div>
+          <div class="glass rounded-xl border border-white/10 px-4 py-3"><div class="font-mono text-[9px] uppercase tracking-widest text-zinc-500">02</div><div class="mt-1 text-sm font-medium">Equipment Leasing</div></div>
+          <div class="glass rounded-xl border border-white/10 px-4 py-3"><div class="font-mono text-[9px] uppercase tracking-widest text-zinc-500">03</div><div class="mt-1 text-sm font-medium">Solar Systems</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
+  <div class="reveal max-w-3xl">
+    <div class="font-mono text-xs uppercase tracking-[.2em] text-cyan-300">Three core capabilities</div>
+    <h2 class="mt-4 text-4xl font-bold tracking-[-.04em] sm:text-5xl">One engineering partner. Three connected disciplines.</h2>
+    <p class="mt-5 leading-7 text-zinc-400">From asset integrity and inspection to the equipment that enables field work and the energy infrastructure that powers operations.</p>
+  </div>
+  <div class="mt-12 grid gap-5 lg:grid-cols-3">
+    <article class="reveal rounded-3xl border border-white/10 bg-zinc-900/60 p-7 shadow-panel">
+      <div class="font-mono text-xs text-cyan-300">01 / NDT</div><h3 class="mt-4 text-2xl font-bold">Non-Destructive Testing</h3>
+      <p class="mt-4 text-sm leading-7 text-zinc-400">Professional inspection services supporting safety, reliability and asset integrity across oil & gas, marine, construction, energy and industrial sectors.</p>
+      <a href="#ndt" class="mt-7 inline-flex text-sm font-semibold text-white hover:text-cyan-200">Explore NDT →</a>
+    </article>
+    <article class="reveal rounded-3xl border border-white/10 bg-zinc-900/60 p-7 shadow-panel">
+      <div class="font-mono text-xs text-emerald-300">02 / EQUIPMENT</div><h3 class="mt-4 text-2xl font-bold">Equipment Leasing</h3>
+      <p class="mt-4 text-sm leading-7 text-zinc-400">Flexible NDT equipment leasing and rental solutions for contractors, inspection companies, maintenance teams and project operators.</p>
+      <a href="#equipment" class="mt-7 inline-flex text-sm font-semibold text-white hover:text-emerald-200">Explore equipment →</a>
+    </article>
+    <article class="reveal rounded-3xl border border-white/10 bg-zinc-900/60 p-7 shadow-panel">
+      <div class="font-mono text-xs text-indigo-300">03 / ENERGY</div><h3 class="mt-4 text-2xl font-bold">Solar Energy</h3>
+      <p class="mt-4 text-sm leading-7 text-zinc-400">Solar systems, equipment, installation, commissioning and maintenance/support for residential, commercial and infrastructure needs.</p>
+      <a href="#solar" class="mt-7 inline-flex text-sm font-semibold text-white hover:text-indigo-200">Explore solar →</a>
+    </article>
+  </div>
+</section>
+
+<!-- NDT -->
+<section id="ndt" class="border-y border-white/10 bg-white/[.018]">
+  <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+    <div class="grid gap-14 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
+      <div class="reveal lg:sticky lg:top-28">
+        <div class="font-mono text-xs uppercase tracking-[.2em] text-cyan-300">01 / Non-Destructive Testing</div>
+        <h2 class="mt-4 text-4xl font-bold tracking-[-.04em] sm:text-5xl">Inspection without compromising the asset.</h2>
+        <p class="mt-6 leading-8 text-zinc-400">LUKEV provides professional NDT and inspection services for welds, pipelines, pressure vessels, storage tanks, structures and other critical components, using proven techniques and procedures in line with applicable standards and client requirements.</p>
+        <ul class="mt-8 grid gap-3 text-sm text-zinc-300">
+          <li>Visual Testing (VT)</li><li>Ultrasonic Testing (UT)</li><li>Magnetic Particle Testing (MT)</li><li>Liquid Penetrant Testing (PT)</li><li>Phased Array Ultrasonic Testing (PAUT)</li><li>Thickness Measurement & Corrosion Monitoring</li><li>Weld Inspection & Evaluation</li><li>In-Service Inspection</li><li>Inspection Reporting & Documentation</li>
+        </ul>
+        <a data-wa="ndt" href="#" class="mt-9 inline-flex rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-cyan-100">Request NDT Inspection ↗</a>
+      </div>
+      <div id="ndtGallery" class="grid grid-cols-2 gap-3 sm:gap-4"></div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPMENT -->
+<section id="equipment">
+  <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+    <div class="grid gap-14 lg:grid-cols-[1.28fr_.72fr] lg:items-start">
+      <div id="equipmentGallery" class="order-2 grid grid-cols-2 gap-3 sm:gap-4 lg:order-1"></div>
+      <div class="reveal order-1 lg:order-2 lg:sticky lg:top-28">
+        <div class="font-mono text-xs uppercase tracking-[.2em] text-emerald-300">02 / Equipment Leasing</div>
+        <h2 class="mt-4 text-4xl font-bold tracking-[-.04em] sm:text-5xl">Field-ready equipment, without unnecessary capital spend.</h2>
+        <p class="mt-6 leading-8 text-zinc-400">Rental and leasing solutions for short-term projects, shutdowns, maintenance campaigns, offshore operations and long-term inspection programs.</p>
+        <div class="mt-8 grid gap-3 text-sm text-zinc-300 sm:grid-cols-2">
+          <span>Ultrasonic flaw detectors</span><span>Ultrasonic thickness gauges</span><span>PAUT equipment & scanners</span><span>Magnetic particle equipment</span><span>Dye penetrant accessories</span><span>UV inspection lamps</span><span>Probes & transducers</span><span>Cables, wedges & scanners</span>
+        </div>
+        <p class="mt-7 text-sm leading-7 text-zinc-500">Reliable equipment • Flexible rental arrangements • Technical support • Responsive service • Project flexibility</p>
+        <a data-wa="equipment" href="#" class="mt-9 inline-flex rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-100">Request Equipment ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLAR -->
+<section id="solar" class="border-y border-white/10 bg-white/[.018]">
+  <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+    <div class="grid gap-14 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
+      <div class="reveal lg:sticky lg:top-28">
+        <div class="font-mono text-xs uppercase tracking-[.2em] text-indigo-300">03 / Solar Energy</div>
+        <h2 class="mt-4 text-4xl font-bold tracking-[-.04em] sm:text-5xl">Energy infrastructure designed for the work ahead.</h2>
+        <p class="mt-6 leading-8 text-zinc-400">Solar energy installation, equipment and systems — from design through installation, commissioning and maintenance/support.</p>
+        <ul class="mt-8 grid gap-3 text-sm text-zinc-300">
+          <li>Solar panels & equipment</li><li>Inverters & battery storage</li><li>System design</li><li>Installation & commissioning</li><li>Maintenance & support</li><li>Commercial and residential systems</li>
+        </ul>
+        <a data-wa="solar" href="#" class="mt-9 inline-flex rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-indigo-100">Request Solar Consultation ↗</a>
+      </div>
+      <div id="solarGallery" class="grid grid-cols-2 gap-3 sm:gap-4"></div>
+    </div>
+  </div>
+</section>
+
+<section id="process" class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
+  <div class="reveal max-w-3xl">
+    <div class="font-mono text-xs uppercase tracking-[.2em] text-zinc-500">How we work</div>
+    <h2 class="mt-4 text-4xl font-bold tracking-[-.04em] sm:text-5xl">A clear path from requirement to support.</h2>
+  </div>
+  <div class="mt-12 grid gap-0 border-l border-white/10">
+    <div class="reveal border-b border-white/10 py-7 pl-7 sm:flex sm:items-center sm:gap-12"><span class="font-mono text-xs text-cyan-300">01</span><h3 class="mt-2 text-xl font-semibold sm:mt-0 sm:w-52">Consultation</h3><p class="mt-2 text-sm leading-6 text-zinc-500 sm:mt-0">Understand the project, asset, equipment or energy requirement.</p></div>
+    <div class="reveal border-b border-white/10 py-7 pl-7 sm:flex sm:items-center sm:gap-12"><span class="font-mono text-xs text-cyan-300">02</span><h3 class="mt-2 text-xl font-semibold sm:mt-0 sm:w-52">Assessment</h3><p class="mt-2 text-sm leading-6 text-zinc-500 sm:mt-0">Assess the scope, operating environment and practical requirements.</p></div>
+    <div class="reveal border-b border-white/10 py-7 pl-7 sm:flex sm:items-center sm:gap-12"><span class="font-mono text-xs text-cyan-300">03</span><h3 class="mt-2 text-xl font-semibold sm:mt-0 sm:w-52">Solution</h3><p class="mt-2 text-sm leading-6 text-zinc-500 sm:mt-0">Define the appropriate inspection, equipment or energy solution.</p></div>
+    <div class="reveal border-b border-white/10 py-7 pl-7 sm:flex sm:items-center sm:gap-12"><span class="font-mono text-xs text-cyan-300">04</span><h3 class="mt-2 text-xl font-semibold sm:mt-0 sm:w-52">Deployment</h3><p class="mt-2 text-sm leading-6 text-zinc-500 sm:mt-0">Coordinate field execution, equipment delivery or installation.</p></div>
+    <div class="reveal py-7 pl-7 sm:flex sm:items-center sm:gap-12"><span class="font-mono text-xs text-cyan-300">05</span><h3 class="mt-2 text-xl font-semibold sm:mt-0 sm:w-52">Support</h3><p class="mt-2 text-sm leading-6 text-zinc-500 sm:mt-0">Stay available for reporting, maintenance, technical support and next steps.</p></div>
+  </div>
+</section>
+
+<section id="about" class="mx-auto max-w-7xl px-4 pb-24 sm:px-6 sm:pb-32">
+  <div class="reveal rounded-[2rem] border border-white/10 bg-zinc-900/60 p-7 shadow-panel sm:p-10 lg:p-14">
+    <div class="grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[.2em] text-emerald-300">About LUKEV</div>
+        <h2 class="mt-4 text-4xl font-bold tracking-[-.04em]">Engineering. Reliability. Asset integrity.</h2>
+      </div>
+      <div class="space-y-6 text-zinc-400 leading-8">
+        <p><strong class="text-white">LUKEV ENGINEERING AND ENERGY LIMITED</strong> (RC 8591018) is focused on engineering, inspection, equipment solutions and energy infrastructure.</p>
+        <p>We are committed to delivering reliable inspection services and equipment solutions to help clients maintain asset integrity and operational efficiency.</p>
+        <p>Whether you require an NDT team for an inspection project or reliable equipment for your next campaign, we are ready to discuss a solution tailored to your requirements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="mx-auto max-w-7xl px-4 pb-24 sm:px-6 sm:pb-32">
+  <div class="reveal overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900/70 shadow-panel">
+    <div class="grid lg:grid-cols-[.8fr_1.2fr]">
+      <div class="relative overflow-hidden p-7 sm:p-10 lg:p-12">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,211,238,.12),transparent_30rem)]"></div>
+        <div class="relative">
+          <div class="font-mono text-xs uppercase tracking-[.2em] text-cyan-300">Start a conversation</div>
+          <h2 class="mt-5 text-4xl font-bold tracking-[-.04em] sm:text-5xl">Let's discuss the right next step.</h2>
+          <p class="mt-5 max-w-md leading-7 text-zinc-400">Use WhatsApp for the fastest direct conversation, or prepare an enquiry for future backend integration.</p>
+          <a data-wa="general" href="#" class="mt-8 inline-flex rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-cyan-100">Chat with LUKEV on WhatsApp ↗</a>
+          <div class="mt-12 space-y-4 text-sm text-zinc-400">
+            <a href="tel:+2348162773606" class="block hover:text-white">08162773606</a>
+            <a href="mailto:luckyonah17@gmail.com" class="block break-all hover:text-white">LUCKYONAH17@GMAIL.COM</a>
+            <p>4, IWUOSAMINI R/OMO, PORT-HARCOURT,<br>RIVERS STATE, NIGERIA</p>
+          </div>
+        </div>
+      </div>
+      <form id="inquiryForm" class="border-t border-white/10 p-7 sm:p-10 lg:border-l lg:border-t-0 lg:p-12" novalidate>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="block"><span class="mb-2 block text-sm font-medium">Full Name</span><input required name="name" type="text" autocomplete="name" class="w-full rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3.5 outline-none focus:border-cyan-300/50" placeholder="Your name"></label>
+          <label class="block"><span class="mb-2 block text-sm font-medium">Work Email</span><input required name="email" type="email" autocomplete="email" class="w-full rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3.5 outline-none focus:border-cyan-300/50" placeholder="you@company.com"></label>
+          <label class="block sm:col-span-2"><span class="mb-2 block text-sm font-medium">Company</span><input name="company" type="text" autocomplete="organization" class="w-full rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3.5 outline-none focus:border-cyan-300/50" placeholder="Company name"></label>
+          <label class="block sm:col-span-2"><span class="mb-2 block text-sm font-medium">Service</span><select name="service" class="w-full rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3.5 outline-none focus:border-cyan-300/50"><option>NDT Inspection</option><option>Equipment Leasing</option><option>Solar Energy</option><option>Multiple Services</option></select></label>
+          <label class="block sm:col-span-2"><span class="mb-2 block text-sm font-medium">Project Details</span><textarea required name="details" rows="5" class="w-full resize-none rounded-xl border border-white/10 bg-zinc-950/70 px-4 py-3.5 outline-none focus:border-cyan-300/50" placeholder="Tell us about the requirement, asset, equipment or project."></textarea></label>
+        </div>
+        <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p id="formStatus" class="text-xs text-zinc-500">Backend-ready form structure. No submission is sent until a real endpoint is connected.</p>
+          <button type="submit" class="rounded-xl border border-white/10 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-cyan-100">Prepare enquiry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="border-t border-white/10">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div class="grid gap-8 md:grid-cols-[1fr_auto]">
+      <div>
+        <img src="assets/lukev-logo.png" alt="LUKEV Engineering and Energy Limited" class="h-10 w-auto max-w-[210px] object-contain">
+        <p class="mt-4 max-w-md text-sm leading-6 text-zinc-500">LUKEV ENGINEERING AND ENERGY LIMITED · RC 8591018</p>
+        <p class="mt-2 max-w-md text-sm leading-6 text-zinc-500">4, IWUOSAMINI R/OMO, PORT-HARCOURT, RIVERS STATE, NIGERIA</p>
+      </div>
+      <div class="grid content-start gap-3 text-sm text-zinc-400 sm:grid-cols-2 md:text-right">
+        <a href="#ndt" class="hover:text-white">NDT</a><a href="#equipment" class="hover:text-white">Equipment Leasing</a>
+        <a href="#solar" class="hover:text-white">Solar Energy</a><a href="#about" class="hover:text-white">About</a>
+        <a href="#contact" class="hover:text-white">Contact</a><a data-wa="general" href="#" class="font-semibold text-white hover:text-cyan-200">Chat with LUKEV on WhatsApp</a>
+      </div>
+    </div>
+    <div class="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+      <span>08162773606 · luckyonah17@gmail.com</span><span>© 2026 LUKEV Engineering & Energy Limited</span>
+    </div>
+  </div>
+</footer>
+
+<div id="lightbox" class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button id="lightboxClose" class="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-black/50 text-xl" aria-label="Close image preview">×</button>
+  <figure class="max-h-[90vh] max-w-6xl">
+    <img id="lightboxImage" src="" alt="" class="max-h-[82vh] w-auto rounded-2xl border border-white/10 object-contain shadow-2xl">
+    <figcaption id="lightboxCaption" class="mt-3 text-center text-sm text-zinc-400"></figcaption>
+  </figure>
+</div>
+
+<script>
+const siteImages = {
+  all: [
+  {
+    "id": "solar-hero",
+    "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=92",
+    "alt": "Commercial solar installation viewed across a modern energy site"
+  },
+  {
+    "id": "engineer-01",
+    "url": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1400&q=90",
+    "alt": "Engineer working with industrial equipment"
+  },
+  {
+    "id": "engineer-02",
+    "url": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1400&q=90",
+    "alt": "Engineer inspecting electrical and industrial systems"
+  },
+  {
+    "id": "solar-02",
+    "url": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1400&q=90",
+    "alt": "Solar panels in a utility-scale installation"
+  },
+  {
+    "id": "solar-03",
+    "url": "https://images.unsplash.com/photo-1509390874183-2d7a5d5a9b26?auto=format&fit=crop&w=2200&q=92",
+    "alt": "Solar infrastructure and field installation"
+  },
+  {
+    "id": "team",
+    "url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=88",
+    "alt": "Engineering team collaboration"
+  },
+  {
+    "id": "field-tech",
+    "url": "https://images.unsplash.com/photo-1581093458791-9d15482442f6?auto=format&fit=crop&w=900&q=88",
+    "alt": "Field engineer at industrial site"
+  },
+  {
+    "id": "solar-roof",
+    "url": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=900&q=88",
+    "alt": "Rooftop solar installation"
+  },
+  {
+    "id": "industrial",
+    "url": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=900&q=88",
+    "alt": "Industrial engineering environment"
+  },
+  {
+    "id": "meeting",
+    "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=2200&q=92",
+    "alt": "Technical project consultation"
+  },
+  {
+    "id": "solar-worker",
+    "url": "https://images.unsplash.com/photo-1624397640148-949b1732bb0a?auto=format&fit=crop&w=1800&q=88",
+    "alt": "Technician installing solar panels on a roof"
+  },
+  {
+    "id": "solar-ground",
+    "url": "https://images.unsplash.com/photo-1662078907821-864039c811da?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Solar panel equipment ready for deployment"
+  },
+  {
+    "id": "solar-roof-detail",
+    "url": "https://images.unsplash.com/photo-1662340712175-349cd23a63d6?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Close view of rooftop solar equipment"
+  },
+  {
+    "id": "solar-carry",
+    "url": "https://images.unsplash.com/photo-1676337167537-f820aeb21eed?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Solar technician carrying a panel"
+  },
+  {
+    "id": "electrical-meter",
+    "url": "https://images.unsplash.com/photo-1660330589827-da8ab7dd3c02?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Technician working on an electrical meter"
+  },
+  {
+    "id": "lathe",
+    "url": "https://images.unsplash.com/photo-1764114441097-6a475eca993d?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Industrial lathe and fabrication equipment"
+  },
+  {
+    "id": "solar-woman",
+    "url": "https://images.unsplash.com/photo-1676337166820-80863a85afa1?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Technician holding a solar panel"
+  },
+  {
+    "id": "solar-field",
+    "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1800&q=88",
+    "alt": "Solar field and energy infrastructure"
+  },
+  {
+    "id": "construction-machine",
+    "url": "https://images.unsplash.com/photo-1779384223661-5bfbf04d027a?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Heavy construction machinery in the field"
+  },
+  {
+    "id": "solar-tree",
+    "url": "https://images.unsplash.com/photo-1680050973244-dc0bc5dc8c2b?auto=format&fit=crop&w=1400&q=88",
+    "alt": "Standalone solar equipment outdoors"
+  },
+  {
+    "id": "solar-farm",
+    "url": "https://images.unsplash.com/photo-1630770147528-3c38bc9e05a6?auto=format&fit=crop&w=1800&q=88",
+    "alt": "Solar panels across a large field"
+  },
+  {
+    "id": "factory-tech",
+    "url": "https://images.unsplash.com/photo-1668097613572-40b7c11c8727?auto=format&fit=crop&w=1600&q=88",
+    "alt": "Technician inspecting equipment in a modern factory"
+  },
+  {
+    "id": "facility-tech",
+    "url": "https://images.unsplash.com/photo-1748348389780-3eb3ce44ac65?auto=format&fit=crop&w=1600&q=88",
+    "alt": "Engineer inspecting industrial equipment"
+  },
+  {
+    "id": "port-crane",
+    "url": "https://images.unsplash.com/photo-1784913104909-889905d83694?auto=format&fit=crop&w=1600&q=88",
+    "alt": "Heavy industrial crane supporting port operations"
+  }
+],
+  ndt: ["engineer-01", "team", "field-tech", "meeting", "factory-tech", "facility-tech", "industrial", "engineer-02"],
+  equipmentLeasing: ["electrical-meter", "lathe", "construction-machine", "port-crane", "solar-ground", "solar-roof-detail", "solar-tree", "solar-woman"],
+  solar: ["solar-hero", "solar-02", "solar-03", "solar-roof", "solar-worker", "solar-carry", "solar-field", "solar-farm"]
+};
+
+const imageMap = Object.fromEntries(siteImages.all.map(image => [image.id, image]));
+
+const whatsappConfig = {
+  number: "2348162773606",
+  messages: {
+    general: "Hello LUKEV, I would like to speak with an expert about your engineering and energy services.",
+    ndt: "Hello LUKEV, I am interested in your Non-Destructive Testing (NDT) and inspection services. I would like to discuss my requirements.",
+    equipment: "Hello LUKEV, I am interested in your NDT equipment leasing services. I would like to discuss the equipment I need and the available rental options.",
+    solar: "Hello LUKEV, I am interested in your solar energy solutions. I would like to discuss my requirements and get more information."
+  }
+};
+
+function getWhatsAppUrl(message) {
+  return `https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent(message)}`;
+}
+
+document.querySelectorAll("[data-wa]").forEach(link => {
+  const key = link.dataset.wa || "general";
+  link.href = getWhatsAppUrl(whatsappConfig.messages[key] || whatsappConfig.messages.general);
+  link.target = "_blank";
+  link.rel = "noopener";
+});
+
+function renderGallery(targetId, ids, label) {
+  const target = document.getElementById(targetId);
+  ids.forEach((id, index) => {
+    const image = imageMap[id];
+    if (!image) return;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = `img-card group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 text-left ${index === 0 ? "col-span-2 aspect-[16/8]" : "aspect-[4/3]"}`;
+    card.setAttribute("aria-label", `Open image: ${image.alt}`);
+    card.innerHTML = `
+      <img src="${image.url}" alt="${image.alt}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async" class="h-full w-full object-cover">
+      <span class="absolute inset-x-3 bottom-3 rounded-lg border border-white/10 bg-black/45 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-zinc-200 backdrop-blur-md">${label}</span>
+    `;
+    card.addEventListener("click", () => openLightbox(image));
+    target.appendChild(card);
+  });
+}
+renderGallery("ndtGallery", siteImages.ndt, "NDT / FIELD INSPECTION");
+renderGallery("equipmentGallery", siteImages.equipmentLeasing, "EQUIPMENT / FIELD READY");
+renderGallery("solarGallery", siteImages.solar, "SOLAR / ENERGY SYSTEMS");
+
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxCaption = document.getElementById("lightboxCaption");
+function openLightbox(image) {
+  lightboxImage.src = image.url;
+  lightboxImage.alt = image.alt;
+  lightboxCaption.textContent = image.alt;
+  lightbox.classList.remove("hidden");
+  lightbox.classList.add("flex");
+  document.body.classList.add("overflow-hidden");
+}
+function closeLightbox() {
+  lightbox.classList.add("hidden");
+  lightbox.classList.remove("flex");
+  lightboxImage.src = "";
+  document.body.classList.remove("overflow-hidden");
+}
+document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+lightbox.addEventListener("click", event => { if (event.target === lightbox) closeLightbox(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape") closeLightbox(); });
+
+const menuButton = document.getElementById("menuButton");
+const mobileMenu = document.getElementById("mobileMenu");
+menuButton.addEventListener("click", () => {
+  const expanded = menuButton.getAttribute("aria-expanded") === "true";
+  menuButton.setAttribute("aria-expanded", String(!expanded));
+  mobileMenu.classList.toggle("hidden", expanded);
+});
+mobileMenu.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+  menuButton.setAttribute("aria-expanded", "false");
+  mobileMenu.classList.add("hidden");
+}));
+
+const form = document.getElementById("inquiryForm");
+const status = document.getElementById("formStatus");
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  if (!form.reportValidity()) return;
+  status.textContent = "Your enquiry is prepared locally. Connect POST /api/inquiries when the backend is available, or use WhatsApp for direct contact.";
+  status.className = "text-xs leading-5 text-cyan-300";
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
