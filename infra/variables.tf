@@ -47,7 +47,7 @@ variable "github_repo" {
   type        = string
 
   validation {
-    condition     = can(regex("^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$", var.github_repo))
+    condition     = can(regex("^[A-Za-z0-9._@-]+/[A-Za-z0-9._@-]+$", var.github_repo))
     error_message = "github_repo must look like owner/name."
   }
 }
