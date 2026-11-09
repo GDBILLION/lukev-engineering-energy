@@ -1,0 +1,19 @@
+# Copy this file to terraform.tfvars (which is git-ignored) and edit it.
+
+# GitHub repo that is allowed to deploy: owner/name
+github_repo = "corneliusluuiz94/lukev-engineering-energy"
+
+# Email that receives AWS cost alerts (the budget alarm in billing.tf)
+alert_email = "you@example.com"
+
+# Keep false until the domain is registered.
+enable_custom_domain = false
+domain_name          = "lukevengineering.com"
+
+# After registering the domain, set enable_custom_domain = true and choose ONE:
+#   registered in Route 53 -> create_hosted_zone = false
+#   registered elsewhere   -> create_hosted_zone = true
+create_hosted_zone = false
+
+# Set to false if this AWS account already has the GitHub OIDC provider.
+create_github_oidc_provider = true

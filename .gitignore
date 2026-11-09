@@ -4,4 +4,19 @@ dist/
 .env.*
 !.env.example
 .DS_Store
-Thumbs.db
+Thumbs.db# Add these lines to the repo's .gitignore BEFORE running any terraform command
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# Secrets and build output
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+lambda/**/node_modules/

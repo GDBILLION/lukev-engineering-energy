@@ -1,0 +1,59 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+# One deploy at a time; a newer push waits for the running one.
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # needed to get AWS credentials through OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (exact lockfile versions)
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        # Later, inject API and Cognito values here, for example:
+        # env:
+        #   VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Configure AWS credentials (OIDC, no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::316762121840:role/lukev-site-prod-github-deploy
+          aws-region: us-east-1
+
+      - name: Upload fingerprinted assets (cached for a year)
+        run: |
+          aws s3 sync dist/ "s3://lukev-site-prod-316762121840" --delete \
+            --exclude "*" --include "assets/index-*" \
+            --cache-control "public,max-age=31536000,immutable"
+
+      - name: Upload everything else (short cache so edits show up quickly)
+        run: |
+          aws s3 sync dist/ "s3://lukev-site-prod-316762121840" --delete \
+            --exclude "assets/index-*" \
+            --cache-control "public,max-age=300"
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "E263MOBZS0XDJ2" \
+            --paths "/*"
