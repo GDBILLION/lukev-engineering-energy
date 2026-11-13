@@ -129,6 +129,15 @@ data "aws_cloudfront_response_headers_policy" "security" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
+# For /api/*: never cache, and pass the visitor's request through to the API.
+data "aws_cloudfront_cache_policy" "disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
 resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
@@ -144,6 +153,19 @@ resource "aws_cloudfront_distribution" "site" {
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
+  # The enquiry API (API Gateway). Same domain as the site, so no CORS is needed.
+  origin {
+    domain_name = replace(aws_apigatewayv2_api.site.api_endpoint, "https://", "")
+    origin_id   = "api"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
   default_cache_behavior {
     target_origin_id           = "site-bucket"
     viewer_protocol_policy     = "redirect-to-https"
@@ -154,8 +176,21 @@ resource "aws_cloudfront_distribution" "site" {
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security.id
   }
 
+  ordered_cache_behavior {
+    path_pattern               = "/api/*"
+    target_origin_id           = "api"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = false
+    cache_policy_id            = data.aws_cloudfront_cache_policy.disabled.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security.id
+  }
+
   # Needed once the app has client-side routes such as /admin.
   # S3 answers 403 for missing keys (the bucket is private), so map 403 and 404 to the app shell.
+  # Note: these two rules apply to /api/* too, so the API must never use 403/404 for real answers.
   custom_error_response {
     error_code            = 403
     response_code         = 200

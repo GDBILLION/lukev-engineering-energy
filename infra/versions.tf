@@ -6,6 +6,12 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.81, < 7.0"
     }
+
+    # Zips the Lambda code in lambda/inquiries
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
+    }
   }
 
   # Backend blocks cannot use variables. The bucket name must match the
