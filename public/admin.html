@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cognito-idp.us-east-1.amazonaws.com; base-uri 'none'; form-action 'none'"
+    />
+    <title>LUKEV Admin</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <noscript><p class="notice">JavaScript is required for the admin area.</p></noscript>
+
+      <!-- Sign in -->
+      <section id="view-login" class="card narrow" hidden>
+        <p class="eyebrow">LUKEV Engineering &amp; Energy</p>
+        <h1>Admin sign in</h1>
+        <form id="login-form" novalidate>
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" autocomplete="username" required />
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" autocomplete="current-password" required />
+          <p id="login-error" class="error" role="alert"></p>
+          <button id="login-submit" class="btn primary" type="submit">Sign in</button>
+        </form>
+      </section>
+
+      <!-- First sign-in: choose your own password -->
+      <section id="view-newpass" class="card narrow" hidden>
+        <p class="eyebrow">First sign in</p>
+        <h1>Choose your password</h1>
+        <p class="muted">At least 12 characters, with upper and lower case letters, a number and a symbol.</p>
+        <form id="newpass-form" novalidate>
+          <label for="newpass-1">New password</label>
+          <input id="newpass-1" type="password" autocomplete="new-password" required />
+          <label for="newpass-2">Repeat new password</label>
+          <input id="newpass-2" type="password" autocomplete="new-password" required />
+          <p id="newpass-error" class="error" role="alert"></p>
+          <button id="newpass-submit" class="btn primary" type="submit">Save password and continue</button>
+        </form>
+      </section>
+
+      <!-- Enquiries -->
+      <section id="view-inbox" hidden>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">LUKEV Admin</p>
+            <h1>Enquiries</h1>
+          </div>
+          <div class="topbar-actions">
+            <span id="who" class="muted"></span>
+            <button id="refresh" class="btn" type="button">Refresh</button>
+            <button id="signout" class="btn" type="button">Sign out</button>
+          </div>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Filter enquiries">
+          <button class="tab" role="tab" data-filter="new" type="button">New <span class="count" data-count="new"></span></button>
+          <button class="tab" role="tab" data-filter="handled" type="button">Handled <span class="count" data-count="handled"></span></button>
+          <button class="tab" role="tab" data-filter="all" type="button">All <span class="count" data-count="all"></span></button>
+        </div>
+
+        <p id="inbox-status" class="status" role="status" aria-live="polite"></p>
+        <div id="list" class="list"></div>
+        <p id="empty" class="muted center" hidden></p>
+      </section>
+    </main>
+
+    <script src="/admin.js"></script>
+  </body>
+</html>
