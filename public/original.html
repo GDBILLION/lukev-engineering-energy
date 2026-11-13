@@ -301,7 +301,7 @@ body{background:#09090b;color:#f4f4f5}
         </div>
         <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p id="formStatus" class="text-xs text-zinc-500">Backend-ready form structure. No submission is sent until a real endpoint is connected.</p>
-          <button type="submit" class="rounded-xl border border-white/10 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-cyan-100">Prepare enquiry</button>
+          <button type="submit" class="rounded-xl border border-white/10 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-950 hover:bg-cyan-100">Send enquiry</button>
         </div>
       </form>
     </div>
@@ -562,5 +562,6 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.12 });
 document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
 </script>
+  <script src="/inquiry.js" defer></script>
 </body>
 </html>
