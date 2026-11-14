@@ -1,4 +1,4 @@
-/* LUKEV admin: sign in with Cognito, then read, handle and delete website enquiries.
+/* LUKEV admin: sign in with Cognito, then manage enquiries and edit the service text on the website.
  * Everything from the database is shown with textContent (never innerHTML), so a visitor's
  * message can never run code in the owner's browser. */
 (function () {
@@ -10,6 +10,37 @@
   var pending = null; // first-login challenge: { session, email }
   var items = [];
   var filter = "new";
+  var page = "inbox"; // "inbox" | "services"
+  var stored = {}; // edited service text from the server, by service id
+
+  // The text built into the website. Shown in the editor until the owner saves a change.
+  var DEFAULTS = {
+    ndt: {
+      label: "NDT",
+      title: "Non-Destructive Testing",
+      summary: "Professional inspection services supporting safety, reliability and asset integrity across oil & gas, marine, construction, energy and industrial sectors.",
+      heading: "Inspection without compromising the asset.",
+      intro: "LUKEV provides professional NDT and inspection services for welds, pipelines, pressure vessels, storage tanks, structures and other critical components, using proven techniques and procedures in line with applicable standards and client requirements.",
+      bullets: ["Visual Testing (VT)", "Ultrasonic Testing (UT)", "Magnetic Particle Testing (MT)", "Liquid Penetrant Testing (PT)", "Phased Array Ultrasonic Testing (PAUT)", "Thickness Measurement & Corrosion Monitoring", "Weld Inspection & Evaluation", "In-Service Inspection", "Inspection Reporting & Documentation"]
+    },
+    equipment: {
+      label: "Equipment Leasing",
+      title: "Equipment Leasing",
+      summary: "Flexible NDT equipment leasing and rental solutions for contractors, inspection companies, maintenance teams and project operators.",
+      heading: "Field-ready equipment, without unnecessary capital spend.",
+      intro: "Rental and leasing solutions for short-term projects, shutdowns, maintenance campaigns, offshore operations and long-term inspection programs.",
+      bullets: ["Ultrasonic flaw detectors", "Ultrasonic thickness gauges", "PAUT equipment & scanners", "Magnetic particle equipment", "Dye penetrant accessories", "UV inspection lamps", "Probes & transducers", "Cables, wedges & scanners"]
+    },
+    solar: {
+      label: "Solar Energy",
+      title: "Solar Energy",
+      summary: "Solar systems, equipment, installation, commissioning and maintenance/support for residential, commercial and infrastructure needs.",
+      heading: "Energy infrastructure designed for the work ahead.",
+      intro: "Solar energy installation, equipment and systems \u2014 from design through installation, commissioning and maintenance/support.",
+      bullets: ["Solar panels & equipment", "Inverters & battery storage", "System design", "Installation & commissioning", "Maintenance & support", "Commercial and residential systems"]
+    }
+  };
+  var SERVICE_ORDER = ["ndt", "equipment", "solar"];
 
   // ---------- small helpers ----------
   function $(id) { return document.getElementById(id); }
@@ -118,6 +149,8 @@
     clearSession();
     pending = null;
     items = [];
+    stored = {};
+    page = "inbox";
     $("login-password").value = "";
     $("login-error").textContent = message || "";
     show("view-login");
@@ -239,10 +272,124 @@
       .catch(function (err) { if (err.message !== "signed out") say(err.message, true); });
   }
 
+  // ---------- services screen ----------
+  function sayServices(message, bad) {
+    var node = $("services-status");
+    node.textContent = message || "";
+    node.className = "status" + (bad ? " bad" : "");
+  }
+
+  function field(id, name, label, value, rows, hint) {
+    var control = rows
+      ? el("textarea", { id: id + "-" + name, rows: String(rows) })
+      : el("input", { id: id + "-" + name, type: "text" });
+    control.value = value;
+    return [
+      el("label", { for: id + "-" + name, text: label }),
+      hint ? el("p", { class: "hint", text: hint }) : null,
+      control
+    ];
+  }
+
+  function serviceCard(id) {
+    var base = DEFAULTS[id];
+    var saved = stored[id];
+    var data = saved || base;
+    var note = el("p", { class: "note", role: "status" });
+
+    var kids = [
+      el("div", { class: "item-head" },
+        el("h2", { text: base.label }),
+        el("span", { class: "chip" + (saved ? " handled" : ""), text: saved ? "Edited" : "Original text" })
+      )
+    ];
+    field(id, "title", "Name (on the service card)", data.title, 0).forEach(function (n) { kids.push(n); });
+    field(id, "summary", "Short description (on the service card)", data.summary, 3).forEach(function (n) { kids.push(n); });
+    field(id, "heading", "Headline (on the service section)", data.heading, 0).forEach(function (n) { kids.push(n); });
+    field(id, "intro", "Paragraph (on the service section)", data.intro, 5).forEach(function (n) { kids.push(n); });
+    field(id, "bullets", "List items", data.bullets.join("\n"), 9, "One item per line. Blank lines are ignored.").forEach(function (n) { kids.push(n); });
+
+    var saveBtn = el("button", { class: "btn save", type: "button", text: "Save changes" });
+    var resetBtn = el("button", { class: "btn", type: "button", text: "Reset to original text" });
+    saveBtn.addEventListener("click", function () { saveService(id, saveBtn, note); });
+    resetBtn.addEventListener("click", function () { resetService(id, note); });
+    kids.push(el("div", { class: "actions" }, saveBtn, resetBtn, note));
+
+    return el.apply(null, ["article", { class: "item svc" }].concat(kids));
+  }
+
+  function renderServices() {
+    var list = $("services-list");
+    list.replaceChildren();
+    SERVICE_ORDER.forEach(function (id) { list.append(serviceCard(id)); });
+  }
+
+  function loadServices() {
+    sayServices("Loading...");
+    return api("/api/admin/content").then(function (data) {
+      stored = data.services || {};
+      sayServices("");
+      renderServices();
+    }).catch(function (err) {
+      if (err.message !== "signed out") sayServices(err.message, true);
+    });
+  }
+
+  function readService(id) {
+    function value(name) { return $(id + "-" + name).value; }
+    return {
+      title: value("title"),
+      summary: value("summary"),
+      heading: value("heading"),
+      intro: value("intro"),
+      bullets: value("bullets").split("\n")
+    };
+  }
+
+  function saveService(id, button, note) {
+    note.textContent = "";
+    note.className = "note";
+    button.disabled = true;
+    api("/api/admin/services/" + id, { method: "PUT", body: JSON.stringify(readService(id)) })
+      .then(function () { return loadServices(); })
+      .then(function () { sayServices(DEFAULTS[id].label + " saved. It is now live on the website."); })
+      .catch(function (err) {
+        button.disabled = false;
+        if (err.message === "signed out") return;
+        note.textContent = err.message;
+        note.className = "note bad";
+      });
+  }
+
+  function resetService(id, note) {
+    if (!window.confirm("Put back the original " + DEFAULTS[id].label + " text? Your edits will be lost.")) return;
+    api("/api/admin/services/" + id, { method: "DELETE" })
+      .then(function () { return loadServices(); })
+      .then(function () { sayServices(DEFAULTS[id].label + " is back to its original text."); })
+      .catch(function (err) {
+        if (err.message === "signed out") return;
+        note.textContent = err.message;
+        note.className = "note bad";
+      });
+  }
+
+  // ---------- pages ----------
+  function setPage(name) {
+    page = name;
+    $("page-inbox").hidden = name !== "inbox";
+    $("page-services").hidden = name !== "services";
+    $("page-title").textContent = name === "inbox" ? "Enquiries" : "Services";
+    document.querySelectorAll(".navtab").forEach(function (tab) {
+      if (tab.getAttribute("data-page") === name) tab.setAttribute("aria-current", "page");
+      else tab.removeAttribute("aria-current");
+    });
+    return name === "inbox" ? load() : loadServices();
+  }
+
   function openInbox() {
     $("who").textContent = session.email || "";
     show("view-inbox");
-    return load();
+    return setPage("inbox");
   }
 
   // ---------- forms ----------
@@ -312,7 +459,10 @@
     }).then(function () { busy(button, false, "Save password and continue"); });
   });
 
-  $("refresh").addEventListener("click", function () { load(); });
+  $("refresh").addEventListener("click", function () { setPage(page); });
+  document.querySelectorAll(".navtab").forEach(function (tab) {
+    tab.addEventListener("click", function () { setPage(tab.getAttribute("data-page")); });
+  });
   $("signout").addEventListener("click", function () { signOut(""); });
   document.querySelectorAll(".tab").forEach(function (tab) {
     tab.addEventListener("click", function () { filter = tab.getAttribute("data-filter"); render(); });

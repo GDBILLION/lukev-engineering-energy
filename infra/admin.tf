@@ -78,6 +78,10 @@ locals {
     "GET /api/admin/inquiries"         = true
     "PATCH /api/admin/inquiries/{id}"  = true
     "DELETE /api/admin/inquiries/{id}" = true
+    "GET /api/content"                 = false # public: the edited service text shown on the website
+    "GET /api/admin/content"           = true
+    "PUT /api/admin/services/{id}"     = true
+    "DELETE /api/admin/services/{id}"  = true
   }
 }
 
@@ -127,7 +131,7 @@ resource "aws_iam_role" "admin" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
 }
 
-# Least privilege: read the index, change or delete enquiries, write its own logs.
+# Least privilege: read the index, change or delete enquiries, edit the service text, write its own logs.
 data "aws_iam_policy_document" "admin" {
   statement {
     sid       = "ReadEnquiries"
@@ -139,6 +143,12 @@ data "aws_iam_policy_document" "admin" {
     sid       = "ChangeEnquiries"
     actions   = ["dynamodb:UpdateItem", "dynamodb:DeleteItem"]
     resources = [aws_dynamodb_table.inquiries.arn]
+  }
+
+  statement {
+    sid       = "EditServiceText"
+    actions   = ["dynamodb:Scan", "dynamodb:PutItem", "dynamodb:DeleteItem"]
+    resources = [aws_dynamodb_table.content.arn]
   }
 
   statement {
@@ -168,6 +178,7 @@ resource "aws_lambda_function" "admin" {
   environment {
     variables = {
       TABLE_NAME        = aws_dynamodb_table.inquiries.name
+      CONTENT_TABLE     = aws_dynamodb_table.content.name
       COGNITO_REGION    = var.aws_region
       COGNITO_CLIENT_ID = aws_cognito_user_pool_client.admin.id
     }

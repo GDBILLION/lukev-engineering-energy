@@ -9,6 +9,10 @@ const anonymous = {};
 
 function setup(seed = {}) {
   const calls = [];
+  const services = seed.services ?? [
+    { id: "ndt", title: "NDT", summary: "s", heading: "h", intro: "i", bullets: ["a"], updatedAt: "2026-11-14T08:00:00.000Z" },
+    { id: "junk", title: "x", summary: "x", heading: "x", intro: "x", bullets: [], updatedAt: "" },
+  ];
   const store = {
     new: seed.new ?? [
       { id: "a", createdAt: "2026-11-10T10:00:00.000Z", status: "new", name: "Older" },
@@ -20,6 +24,9 @@ function setup(seed = {}) {
     listByStatus: async (s) => (calls.push(["list", s]), store[s]),
     setStatus: async (id, s, t) => (calls.push(["set", id, s, t]), id === ID),
     remove: async (id) => (calls.push(["del", id]), id === ID),
+    listServices: async () => (calls.push(["listServices"]), services),
+    saveService: async (id, v, t) => calls.push(["saveService", id, v, t]),
+    resetService: async (id) => calls.push(["resetService", id]),
   };
   const handler = createHandler({
     db,
@@ -114,4 +121,57 @@ test("a database failure gives a generic 500", async () => {
 test("unknown routes are refused", async () => {
   const { handler } = setup();
   assert.equal((await handler(ev("GET /api/admin/other"))).statusCode, 400);
+});
+
+const good = { title: "NDT", summary: "Short text", heading: "Headline", intro: "Paragraph.", bullets: ["One", " Two ", ""] };
+
+test("public content returns edited services without internal fields", async () => {
+  const { handler } = setup();
+  const res = await handler(ev("GET /api/content", {}, anonymous));
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(Object.keys(body.services), ["ndt"], "unknown ids are dropped");
+  assert.equal("updatedAt" in body.services.ndt, false);
+});
+
+test("admin content includes the saved time and needs a login", async () => {
+  const { handler } = setup();
+  assert.equal((await handler(ev("GET /api/admin/content", {}, anonymous))).statusCode, 401);
+  const body = JSON.parse((await handler(ev("GET /api/admin/content"))).body);
+  assert.equal(body.services.ndt.updatedAt, "2026-11-14T08:00:00.000Z");
+});
+
+test("saving a service checks the login, the id and the text", async () => {
+  const { handler, calls } = setup();
+  const put = (id, body, auth) => handler(ev("PUT /api/admin/services/{id}", { pathParameters: { id }, body: JSON.stringify(body) }, auth));
+  assert.equal((await put("ndt", good, anonymous)).statusCode, 401);
+  assert.equal((await put("pizza", good)).statusCode, 400);
+  assert.equal((await put("ndt", { ...good, title: "" })).statusCode, 400);
+  assert.equal((await put("ndt", { ...good, bullets: [] })).statusCode, 400);
+  assert.equal((await put("ndt", { ...good, bullets: ["x".repeat(121)] })).statusCode, 400);
+  assert.equal((await put("ndt", { ...good, intro: "x".repeat(1501) })).statusCode, 400);
+  assert.equal(calls.filter((c) => c[0] === "saveService").length, 0);
+
+  const ok = await put("ndt", { ...good, title: "  NDT\n  Services " });
+  assert.equal(ok.statusCode, 200);
+  const saved = calls.find((c) => c[0] === "saveService");
+  assert.equal(saved[1], "ndt");
+  assert.equal(saved[2].title, "NDT Services", "line breaks and extra spaces are cleaned");
+  assert.deepEqual(saved[2].bullets, ["One", "Two"], "blank list items are dropped");
+  assert.equal(saved[3], "2026-11-13T12:00:00.000Z");
+});
+
+test("bad JSON and oversized bodies are refused with 400, never 403 or 404", async () => {
+  const { handler } = setup();
+  const send = (body) => handler(ev("PUT /api/admin/services/{id}", { pathParameters: { id: "ndt" }, body }));
+  assert.equal((await send("{not json")).statusCode, 400);
+  assert.equal((await send("x".repeat(20001))).statusCode, 400);
+});
+
+test("resetting a service forgets the edits", async () => {
+  const { handler, calls } = setup();
+  const res = await handler(ev("DELETE /api/admin/services/{id}", { pathParameters: { id: "solar" } }));
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(calls.at(-1), ["resetService", "solar"]);
+  assert.equal((await handler(ev("DELETE /api/admin/services/{id}", { pathParameters: { id: "x" } }))).statusCode, 400);
 });
