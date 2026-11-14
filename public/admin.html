@@ -62,6 +62,7 @@
         <nav class="mainnav" aria-label="Admin sections">
           <button class="navtab" data-page="inbox" type="button">Enquiries</button>
           <button class="navtab" data-page="services" type="button">Services</button>
+          <button class="navtab" data-page="photos" type="button">Photos</button>
         </nav>
 
         <!-- Enquiries -->
@@ -82,6 +83,13 @@
           <p class="muted">Edit the words for each service. Changes show on the website the next time a visitor opens or refreshes the page. Reset puts back the original text.</p>
           <p id="services-status" class="status" role="status" aria-live="polite"></p>
           <div id="services-list" class="list"></div>
+        </div>
+
+        <!-- Photos -->
+        <div id="page-photos" hidden>
+          <p class="muted">Photos for the three galleries on the website. The first photo is shown large. A gallery with no photos of yours keeps the stock photos. Each gallery holds up to 12.</p>
+          <p id="photos-status" class="status" role="status" aria-live="polite"></p>
+          <div id="photos-list" class="list"></div>
         </div>
       </section>
     </main>

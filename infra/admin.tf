@@ -82,6 +82,9 @@ locals {
     "GET /api/admin/content"           = true
     "PUT /api/admin/services/{id}"     = true
     "DELETE /api/admin/services/{id}"  = true
+    "POST /api/admin/photos"           = true
+    "PATCH /api/admin/photos/{id}"     = true
+    "DELETE /api/admin/photos/{id}"    = true
   }
 }
 
@@ -131,7 +134,7 @@ resource "aws_iam_role" "admin" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
 }
 
-# Least privilege: read the index, change or delete enquiries, edit the service text, write its own logs.
+# Least privilege: read the index, change or delete enquiries, edit the service text and photos, write its own logs.
 data "aws_iam_policy_document" "admin" {
   statement {
     sid       = "ReadEnquiries"
@@ -149,6 +152,12 @@ data "aws_iam_policy_document" "admin" {
     sid       = "EditServiceText"
     actions   = ["dynamodb:Scan", "dynamodb:PutItem", "dynamodb:DeleteItem"]
     resources = [aws_dynamodb_table.content.arn]
+  }
+
+  statement {
+    sid       = "ManagePhotoFiles"
+    actions   = ["s3:PutObject", "s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.media.arn}/media/photos/*"]
   }
 
   statement {
@@ -179,6 +188,7 @@ resource "aws_lambda_function" "admin" {
     variables = {
       TABLE_NAME        = aws_dynamodb_table.inquiries.name
       CONTENT_TABLE     = aws_dynamodb_table.content.name
+      MEDIA_BUCKET      = aws_s3_bucket.media.id
       COGNITO_REGION    = var.aws_region
       COGNITO_CLIENT_ID = aws_cognito_user_pool_client.admin.id
     }

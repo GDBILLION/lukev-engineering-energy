@@ -1,4 +1,4 @@
-/* LUKEV admin: sign in with Cognito, then manage enquiries and edit the service text on the website.
+/* LUKEV admin: sign in with Cognito, then manage enquiries, edit the service text and upload gallery photos.
  * Everything from the database is shown with textContent (never innerHTML), so a visitor's
  * message can never run code in the owner's browser. */
 (function () {
@@ -10,7 +10,9 @@
   var pending = null; // first-login challenge: { session, email }
   var items = [];
   var filter = "new";
-  var page = "inbox"; // "inbox" | "services"
+  var page = "inbox"; // "inbox" | "services" | "photos"
+  var photos = []; // uploaded photos from the server, in display order
+  var MAX_PHOTOS = 12;
   var stored = {}; // edited service text from the server, by service id
 
   // The text built into the website. Shown in the editor until the owner saves a change.
@@ -150,6 +152,7 @@
     pending = null;
     items = [];
     stored = {};
+    photos = [];
     page = "inbox";
     $("login-password").value = "";
     $("login-error").textContent = message || "";
@@ -373,17 +376,196 @@
       });
   }
 
+  // ---------- photos screen ----------
+  function sayPhotos(message, bad) {
+    var node = $("photos-status");
+    node.textContent = message || "";
+    node.className = "status" + (bad ? " bad" : "");
+  }
+
+  function decodeImage(file) {
+    function viaImage() {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error("Could not read that file.")); };
+        reader.onload = function () {
+          var img = new Image();
+          img.onload = function () { resolve(img); };
+          img.onerror = function () { reject(new Error("That file is not a photo this browser can open. Try a JPEG or PNG.")); };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: "from-image" }).catch(viaImage);
+    }
+    return viaImage();
+  }
+
+  // Shrinks the photo to at most 1800 pixels and re-saves it as a JPEG (this also removes hidden
+  // data such as the GPS location). Returns the JPEG as base64 text.
+  function prepareJpeg(file) {
+    return decodeImage(file).then(function (img) {
+      var width = img.naturalWidth || img.width;
+      var height = img.naturalHeight || img.height;
+      var scale = Math.min(1, 1800 / Math.max(width, height));
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      if (img.close) img.close();
+      var qualities = [0.85, 0.7, 0.55];
+      for (var i = 0; i < qualities.length; i++) {
+        var data = canvas.toDataURL("image/jpeg", qualities[i]).split(",")[1] || "";
+        if (data.length < 3900000) return data;
+      }
+      throw new Error("That photo is too large even after shrinking it.");
+    });
+  }
+
+  function loadPhotos() {
+    sayPhotos("Loading...");
+    return api("/api/admin/content").then(function (data) {
+      photos = data.photos || [];
+      sayPhotos("");
+      renderPhotos();
+    }).catch(function (err) {
+      if (err.message !== "signed out") sayPhotos(err.message, true);
+    });
+  }
+
+  function photoTile(photo, isFirst) {
+    var caption = el("input", { type: "text", maxlength: "100", placeholder: "Caption (optional)", "aria-label": "Caption" });
+    caption.value = photo.caption || "";
+    var note = el("p", { class: "note", role: "status" });
+
+    var save = el("button", { class: "btn", type: "button", text: "Save caption" });
+    save.addEventListener("click", function () { changePhoto(photo, { caption: caption.value }, "Caption saved.", note); });
+    var front = el("button", { class: "btn", type: "button", text: "Make first" });
+    front.addEventListener("click", function () { changePhoto(photo, { first: true }, "Moved to the front.", note, true); });
+    var del = el("button", { class: "btn danger", type: "button", text: "Delete" });
+    del.addEventListener("click", function () { deletePhoto(photo, note); });
+
+    return el("div", { class: "photo" },
+      el("img", { src: photo.url, alt: photo.caption || "Uploaded photo", loading: "lazy" }),
+      isFirst ? el("span", { class: "badge", text: "Shown large" }) : null,
+      caption,
+      el("div", { class: "row" }, save, isFirst ? null : front, del),
+      note
+    );
+  }
+
+  function uploadBox(id, count) {
+    var caption = el("input", { id: id + "-newcaption", type: "text", maxlength: "100", placeholder: "Caption for the new photos (optional)" });
+    var file = el("input", { id: id + "-file", type: "file", accept: "image/*", multiple: "multiple" });
+    var note = el("p", { class: "note", role: "status" });
+    if (count >= MAX_PHOTOS) file.disabled = true;
+
+    file.addEventListener("change", function () {
+      var list = Array.prototype.slice.call(file.files || []);
+      if (!list.length) return;
+      uploadFiles(id, list, caption.value, note).then(function () { file.value = ""; });
+    });
+
+    return el("div", { class: "upload" },
+      el("label", { for: id + "-file", text: count >= MAX_PHOTOS ? "This gallery is full. Delete a photo to add another." : "Add photos" }),
+      caption,
+      el("div", { class: "gap" }),
+      file,
+      note
+    );
+  }
+
+  function renderPhotos() {
+    var list = $("photos-list");
+    list.replaceChildren();
+    SERVICE_ORDER.forEach(function (id) {
+      var mine = photos.filter(function (p) { return p.gallery === id; });
+      var grid = el("div", { class: "photos" });
+      mine.forEach(function (p, i) { grid.append(photoTile(p, i === 0)); });
+      list.append(el("article", { class: "item svc" },
+        el("div", { class: "item-head" },
+          el("h2", { text: DEFAULTS[id].label }),
+          el("span", { class: "chip", text: mine.length ? mine.length + " of " + MAX_PHOTOS + " photos" : "Stock photos" })
+        ),
+        mine.length ? grid : el("p", { class: "muted", text: "No photos of yours yet. The website shows its stock photos here." }),
+        uploadBox(id, mine.length)
+      ));
+    });
+  }
+
+  function uploadFiles(gallery, files, caption, note) {
+    var done = 0;
+    var failed = 0;
+    note.className = "note";
+    // One at a time, so a slow phone connection is not overloaded.
+    return files.reduce(function (chain, file, index) {
+      return chain.then(function () {
+        note.textContent = "Uploading " + (index + 1) + " of " + files.length + "...";
+        return prepareJpeg(file)
+          .then(function (data) {
+            return api("/api/admin/photos", { method: "POST", body: JSON.stringify({ gallery: gallery, caption: caption, data: data }) });
+          })
+          .then(function () { done++; })
+          .catch(function (err) {
+            if (err.message === "signed out") throw err;
+            failed++;
+            note.className = "note bad";
+            note.textContent = file.name + ": " + err.message;
+          });
+      });
+    }, Promise.resolve()).then(function () {
+      return loadPhotos();
+    }).then(function () {
+      sayPhotos(done + (done === 1 ? " photo" : " photos") + " uploaded" + (failed ? ", " + failed + " failed." : ". They are now live on the website."), failed > 0 && done === 0);
+    }).catch(function () { /* signed out */ });
+  }
+
+  function changePhoto(photo, body, okMessage, note, reload) {
+    note.textContent = "";
+    note.className = "note";
+    api("/api/admin/photos/" + encodeURIComponent(photo.id), { method: "PATCH", body: JSON.stringify(body) })
+      .then(function () {
+        if (reload) return loadPhotos().then(function () { sayPhotos(okMessage); });
+        photo.caption = body.caption !== undefined ? body.caption.trim() : photo.caption;
+        note.textContent = okMessage;
+        return null;
+      })
+      .catch(function (err) {
+        if (err.message === "signed out") return;
+        note.textContent = err.message;
+        note.className = "note bad";
+      });
+  }
+
+  function deletePhoto(photo, note) {
+    if (!window.confirm("Delete this photo? It disappears from the website. This cannot be undone.")) return;
+    api("/api/admin/photos/" + encodeURIComponent(photo.id), { method: "DELETE" })
+      .then(function () { return loadPhotos(); })
+      .then(function () { sayPhotos("Photo deleted."); })
+      .catch(function (err) {
+        if (err.message === "signed out") return;
+        note.textContent = err.message;
+        note.className = "note bad";
+      });
+  }
+
   // ---------- pages ----------
   function setPage(name) {
     page = name;
     $("page-inbox").hidden = name !== "inbox";
     $("page-services").hidden = name !== "services";
-    $("page-title").textContent = name === "inbox" ? "Enquiries" : "Services";
+    $("page-photos").hidden = name !== "photos";
+    $("page-title").textContent = name === "inbox" ? "Enquiries" : name === "services" ? "Services" : "Photos";
     document.querySelectorAll(".navtab").forEach(function (tab) {
       if (tab.getAttribute("data-page") === name) tab.setAttribute("aria-current", "page");
       else tab.removeAttribute("aria-current");
     });
-    return name === "inbox" ? load() : loadServices();
+    return name === "inbox" ? load() : name === "services" ? loadServices() : loadPhotos();
   }
 
   function openInbox() {
