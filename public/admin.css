@@ -140,3 +140,14 @@ textarea { min-height: 96px; padding: 10px 14px; resize: vertical; line-height: 
 .svc .note { margin: 0; font-size: 0.85rem; color: var(--ok); }
 .svc .note.bad { color: var(--danger); }
 .svc .btn.save { color: #09090b; background: #fff; border-color: #fff; }
+
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+.photo { display: grid; gap: 8px; align-content: start; padding: 10px; background: #09090b; border: 1px solid var(--line); border-radius: 12px; }
+.photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: var(--card-2); }
+.photo input { min-height: 40px; padding: 6px 10px; font-size: 0.9rem; }
+.photo .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.photo .btn { min-height: 38px; padding: 6px 10px; font-size: 0.85rem; flex: 1 1 auto; }
+.photo .badge { color: var(--accent); font-size: 0.75rem; font-weight: 600; }
+.upload { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.upload input[type="file"] { padding: 8px; }
+.gap { height: 8px; }

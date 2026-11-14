@@ -7,6 +7,10 @@
 //   GET    /api/admin/content               the same, for the admin screen
 //   PUT    /api/admin/services/{id}         save the text of one service (ndt | equipment | solar)
 //   DELETE /api/admin/services/{id}         forget the edits, so the website shows its built-in text again
+//   POST   /api/admin/photos                upload one photo (a JPEG the admin page has already resized) to a gallery
+//   PATCH  /api/admin/photos/{id}           change a caption, or move the photo to the front of its gallery
+//   DELETE /api/admin/photos/{id}           remove a photo
+//   (GET /api/content and GET /api/admin/content also list the photos)
 //
 // Never answer 403 or 404 from here: CloudFront rewrites those two codes to the website's index.html.
 
@@ -16,11 +20,16 @@ const HEADERS = {
 };
 
 const STATUSES = ["new", "handled"];
+const PHOTO_PREFIX = "photo-";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PAGE_LIMIT = 200;
 
 const SERVICE_IDS = ["ndt", "equipment", "solar"];
 const MAX_BODY = 20000;
+const MAX_UPLOAD_BODY = 4500000; // characters of JSON; the admin page resizes photos to well under this
+const MAX_PHOTO_BYTES = 3000000;
+const MAX_PHOTOS_PER_GALLERY = 12;
+const BASE64_RE = /^[A-Za-z0-9+/]+={0,2}$/;
 
 // Single-line text: control characters (including line breaks) are removed, then trimmed.
 const clean = (value) => (typeof value === "string" ? value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim() : "");
@@ -96,19 +105,108 @@ function dynamoAdapter(env) {
       }
     },
 
-    // Edited service text. Each service is one small item in the content table.
-    async listServices() {
+    // Edited service text and uploaded photo records live together in the content table.
+    async listContent() {
       const { sdk, client } = await load();
-      const out = await client.send(new sdk.ScanCommand({ TableName: env.CONTENT_TABLE }));
-      return (out.Items ?? []).map((item) => ({
-        id: item.id?.S ?? "",
-        title: item.title?.S ?? "",
-        summary: item.summary?.S ?? "",
-        heading: item.heading?.S ?? "",
-        intro: item.intro?.S ?? "",
-        bullets: (item.bullets?.L ?? []).map((b) => b.S ?? ""),
-        updatedAt: item.updatedAt?.S ?? "",
-      }));
+      const services = [];
+      const photos = [];
+      let startKey;
+      do {
+        const out = await client.send(new sdk.ScanCommand({ TableName: env.CONTENT_TABLE, ExclusiveStartKey: startKey }));
+        for (const item of out.Items ?? []) {
+          const id = item.id?.S ?? "";
+          if (id.startsWith(PHOTO_PREFIX)) {
+            photos.push({
+              id: id.slice(PHOTO_PREFIX.length),
+              gallery: item.gallery?.S ?? "",
+              caption: item.caption?.S ?? "",
+              key: item.key?.S ?? "",
+              position: Number(item.position?.N ?? 0),
+              createdAt: item.createdAt?.S ?? "",
+            });
+          } else {
+            services.push({
+              id,
+              title: item.title?.S ?? "",
+              summary: item.summary?.S ?? "",
+              heading: item.heading?.S ?? "",
+              intro: item.intro?.S ?? "",
+              bullets: (item.bullets?.L ?? []).map((b) => b.S ?? ""),
+              updatedAt: item.updatedAt?.S ?? "",
+            });
+          }
+        }
+        startKey = out.LastEvaluatedKey;
+      } while (startKey);
+      return { services, photos };
+    },
+
+    async savePhoto(photo) {
+      const { sdk, client } = await load();
+      await client.send(
+        new sdk.PutItemCommand({
+          TableName: env.CONTENT_TABLE,
+          Item: {
+            id: { S: PHOTO_PREFIX + photo.id },
+            gallery: { S: photo.gallery },
+            caption: { S: photo.caption },
+            key: { S: photo.key },
+            position: { N: String(photo.position) },
+            createdAt: { S: photo.createdAt },
+          },
+          ConditionExpression: "attribute_not_exists(id)",
+        }),
+      );
+    },
+
+    // Returns false when the photo does not exist.
+    async updatePhoto(id, { caption, position }) {
+      const { sdk, client } = await load();
+      const sets = [];
+      const values = {};
+      if (caption !== undefined) {
+        sets.push("caption = :c");
+        values[":c"] = { S: caption };
+      }
+      if (position !== undefined) {
+        sets.push("#p = :p");
+        values[":p"] = { N: String(position) };
+      }
+      try {
+        await client.send(
+          new sdk.UpdateItemCommand({
+            TableName: env.CONTENT_TABLE,
+            Key: { id: { S: PHOTO_PREFIX + id } },
+            UpdateExpression: "SET " + sets.join(", "),
+            ExpressionAttributeNames: position !== undefined ? { "#p": "position" } : undefined,
+            ExpressionAttributeValues: values,
+            ConditionExpression: "attribute_exists(id)",
+          }),
+        );
+        return true;
+      } catch (err) {
+        if (isMissing(err)) return false;
+        throw err;
+      }
+    },
+
+    // Returns the stored file key, or null when the photo does not exist.
+    async removePhoto(id) {
+      const { sdk, client } = await load();
+      try {
+        const out = await client.send(
+          new sdk.DeleteItemCommand({
+            TableName: env.CONTENT_TABLE,
+            Key: { id: { S: PHOTO_PREFIX + id } },
+            ConditionExpression: "attribute_exists(id)",
+            ReturnValues: "ALL_OLD",
+          }),
+        );
+        return out.Attributes?.key?.S ?? "";
+      } catch (err) {
+        if (isMissing(err)) return null;
+        throw err;
+      }
     },
 
     async saveService(id, value, nowIso) {
@@ -153,6 +251,50 @@ function dynamoAdapter(env) {
   };
 }
 
+// The private media bucket. CloudFront serves these files to visitors at /media/...
+function s3Adapter(env) {
+  let loaded;
+  const load = async () => {
+    if (!loaded) {
+      const sdk = await import("@aws-sdk/client-s3");
+      loaded = { sdk, client: new sdk.S3Client({}) };
+    }
+    return loaded;
+  };
+  return {
+    async put(key, body, contentType) {
+      const { sdk, client } = await load();
+      await client.send(
+        new sdk.PutObjectCommand({
+          Bucket: env.MEDIA_BUCKET,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+          CacheControl: "public, max-age=31536000, immutable", // every photo has its own unique name
+        }),
+      );
+    },
+    async remove(key) {
+      const { sdk, client } = await load();
+      await client.send(new sdk.DeleteObjectCommand({ Bucket: env.MEDIA_BUCKET, Key: key }));
+    },
+  };
+}
+
+// Photos of every gallery, in display order. Visitors get no internal fields.
+function photoList(photos, forOwner) {
+  return [...photos]
+    .filter((p) => SERVICE_IDS.includes(p.gallery) && p.key)
+    .sort((a, b) => a.position - b.position || (a.createdAt < b.createdAt ? -1 : 1))
+    .map((p) => ({
+      id: p.id,
+      gallery: p.gallery,
+      caption: p.caption,
+      url: "/" + p.key,
+      ...(forOwner ? { createdAt: p.createdAt } : {}),
+    }));
+}
+
 // { ndt: {...}, equipment: {...} } of the services that have been edited; visitors get no internal fields.
 function toMap(rows, forOwner) {
   const out = {};
@@ -164,7 +306,7 @@ function toMap(rows, forOwner) {
   return out;
 }
 
-export function createHandler({ db, config, now = () => new Date() }) {
+export function createHandler({ db, files, config, now = () => new Date(), newId = () => crypto.randomUUID() }) {
   return async (event) => {
     try {
       const route = event?.routeKey;
@@ -176,7 +318,8 @@ export function createHandler({ db, config, now = () => new Date() }) {
 
       // Public: the edited service text that the website itself shows to visitors.
       if (route === "GET /api/content") {
-        return reply(200, { ok: true, services: toMap(await db.listServices(), false) });
+        const content = await db.listContent();
+        return reply(200, { ok: true, services: toMap(content.services, false), photos: photoList(content.photos, false) });
       }
 
       // API Gateway has already checked the token. Check again, so a misconfigured route can never leak data.
@@ -219,7 +362,8 @@ export function createHandler({ db, config, now = () => new Date() }) {
       }
 
       if (route === "GET /api/admin/content") {
-        return reply(200, { ok: true, services: toMap(await db.listServices(), true) });
+        const content = await db.listContent();
+        return reply(200, { ok: true, services: toMap(content.services, true), photos: photoList(content.photos, true) });
       }
 
       if (route === "PUT /api/admin/services/{id}" || route === "DELETE /api/admin/services/{id}") {
@@ -244,6 +388,77 @@ export function createHandler({ db, config, now = () => new Date() }) {
         return reply(200, { ok: true });
       }
 
+      if (route === "POST /api/admin/photos") {
+        if ((event.body ?? "").length > MAX_UPLOAD_BODY) return reply(400, { ok: false, error: "That photo is too large." });
+        let input;
+        try {
+          input = JSON.parse(event.body ?? "");
+        } catch {
+          return reply(400, { ok: false, error: "Invalid request." });
+        }
+        const gallery = input?.gallery;
+        if (!SERVICE_IDS.includes(gallery)) return reply(400, { ok: false, error: "Unknown gallery." });
+        const caption = clean(input.caption ?? "");
+        if (caption.length > 100) return reply(400, { ok: false, error: "A caption can have up to 100 characters." });
+        if (typeof input.data !== "string" || !BASE64_RE.test(input.data)) return reply(400, { ok: false, error: "That is not a valid photo." });
+        const bytes = Buffer.from(input.data, "base64");
+        if (bytes.length > MAX_PHOTO_BYTES) return reply(400, { ok: false, error: "That photo is too large." });
+        if (!(bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)) {
+          return reply(400, { ok: false, error: "Only JPEG photos can be uploaded." });
+        }
+        const existing = (await db.listContent()).photos.filter((p) => p.gallery === gallery);
+        if (existing.length >= MAX_PHOTOS_PER_GALLERY) {
+          return reply(400, { ok: false, error: "This gallery already has " + MAX_PHOTOS_PER_GALLERY + " photos. Delete one first." });
+        }
+        const id = newId();
+        const key = "media/photos/" + id + ".jpg";
+        const createdAt = now().toISOString();
+        await files.put(key, bytes, "image/jpeg");
+        try {
+          await db.savePhoto({ id, gallery, caption, key, position: now().getTime(), createdAt });
+        } catch (err) {
+          await files.remove(key).catch(() => {});
+          throw err;
+        }
+        return reply(200, { ok: true, photo: { id, gallery, caption, url: "/" + key } });
+      }
+
+      if (route === "PATCH /api/admin/photos/{id}" || route === "DELETE /api/admin/photos/{id}") {
+        const id = event.pathParameters?.id ?? "";
+        if (!UUID_RE.test(id)) return reply(400, { ok: false, error: "Invalid photo id." });
+        const gone = { ok: false, error: "That photo no longer exists." };
+
+        if (route.startsWith("DELETE")) {
+          const key = await db.removePhoto(id);
+          if (key === null) return reply(400, gone);
+          if (key) await files.remove(key).catch((err) => console.error("Could not delete file", { name: err?.name }));
+          return reply(200, { ok: true });
+        }
+
+        let input;
+        try {
+          input = JSON.parse(event.body ?? "");
+        } catch {
+          return reply(400, { ok: false, error: "Invalid request." });
+        }
+        const change = {};
+        if (input?.caption !== undefined) {
+          const caption = clean(input.caption);
+          if (caption.length > 100) return reply(400, { ok: false, error: "A caption can have up to 100 characters." });
+          change.caption = caption;
+        }
+        if (input?.first === true) {
+          const all = (await db.listContent()).photos;
+          const mine = all.find((p) => p.id === id);
+          if (!mine) return reply(400, gone);
+          const front = Math.min(...all.filter((p) => p.gallery === mine.gallery).map((p) => p.position));
+          change.position = front - 1;
+        }
+        if (change.caption === undefined && change.position === undefined) return reply(400, { ok: false, error: "Nothing to change." });
+        const found = await db.updatePhoto(id, change);
+        return found ? reply(200, { ok: true }) : reply(400, gone);
+      }
+
       return reply(400, { ok: false, error: "Unknown request." });
     } catch (err) {
       console.error("Admin request failed", { route: event?.routeKey, name: err?.name, message: err?.message });
@@ -254,5 +469,6 @@ export function createHandler({ db, config, now = () => new Date() }) {
 
 export const handler = createHandler({
   db: dynamoAdapter(process.env),
+  files: s3Adapter(process.env),
   config: { region: process.env.COGNITO_REGION, clientId: process.env.COGNITO_CLIENT_ID },
 });

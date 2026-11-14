@@ -153,6 +153,13 @@ resource "aws_cloudfront_distribution" "site" {
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
+  # Photos uploaded from /admin (private bucket, see media.tf). Reuses the same read-only access setup.
+  origin {
+    domain_name              = aws_s3_bucket.media.bucket_regional_domain_name
+    origin_id                = "media-bucket"
+    origin_access_control_id = aws_cloudfront_origin_access_control.site.id
+  }
+
   # The enquiry API (API Gateway). Same domain as the site, so no CORS is needed.
   origin {
     domain_name = replace(aws_apigatewayv2_api.site.api_endpoint, "https://", "")
@@ -191,6 +198,18 @@ resource "aws_cloudfront_distribution" "site" {
     compress                   = false
     cache_policy_id            = data.aws_cloudfront_cache_policy.disabled.id
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security.id
+  }
+
+  # Uploaded photos. Every photo has a unique file name, so they can be cached for a long time.
+  ordered_cache_behavior {
+    path_pattern               = "/media/*"
+    target_origin_id           = "media-bucket"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    cache_policy_id            = data.aws_cloudfront_cache_policy.optimized.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security.id
   }
 

@@ -1,5 +1,5 @@
-/* LUKEV website: shows the service text the owner edited in /admin.
- * If nothing was edited (or the server cannot be reached) the text already in the page stays.
+/* LUKEV website: shows the service text and photos the owner changed in /admin.
+ * If nothing was changed (or the server cannot be reached) the text and photos already in the page stay.
  * Text is always set with textContent, never innerHTML, so saved text can never run code. */
 (function () {
   "use strict";
@@ -40,11 +40,59 @@
     }
   }
 
+  // The three galleries. A gallery with no uploaded photos keeps the built-in photos.
+  var GALLERIES = {
+    ndt:       { target: "ndtGallery",       label: "NDT / FIELD INSPECTION" },
+    equipment: { target: "equipmentGallery", label: "EQUIPMENT / FIELD READY" },
+    solar:     { target: "solarGallery",     label: "SOLAR / ENERGY SYSTEMS" }
+  };
+
+  function photoCard(photo, index, label) {
+    var alt = photo.caption || "LUKEV project photo";
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "img-card group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 text-left " +
+      (index === 0 ? "col-span-2 aspect-[16/8]" : "aspect-[4/3]");
+    card.setAttribute("aria-label", "Open image: " + alt);
+
+    var img = document.createElement("img");
+    img.src = photo.url;
+    img.alt = alt;
+    img.loading = index === 0 ? "eager" : "lazy";
+    img.decoding = "async";
+    img.className = "h-full w-full object-cover";
+
+    var tag = document.createElement("span");
+    tag.className = "absolute inset-x-3 bottom-3 rounded-lg border border-white/10 bg-black/45 px-3 py-2 font-mono text-[9px] uppercase tracking-[.14em] text-zinc-200 backdrop-blur-md";
+    tag.textContent = photo.caption || label;
+
+    card.append(img, tag);
+    card.addEventListener("click", function () {
+      if (typeof window.openLightbox === "function") window.openLightbox({ url: photo.url, alt: alt });
+    });
+    return card;
+  }
+
+  function applyPhotos(photos) {
+    if (!Array.isArray(photos)) return;
+    Object.keys(GALLERIES).forEach(function (id) {
+      var where = GALLERIES[id];
+      var mine = photos.filter(function (p) {
+        return p && p.gallery === id && typeof p.url === "string" && p.url.indexOf("/media/photos/") === 0;
+      });
+      var target = document.getElementById(where.target);
+      if (!target || !mine.length) return;
+      target.replaceChildren.apply(target, mine.map(function (p, i) { return photoCard(p, i, where.label); }));
+    });
+  }
+
   fetch("/api/content", { headers: { Accept: "application/json" } })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      if (!data || data.ok !== true || !data.services) return;
+      if (!data || data.ok !== true) return;
+      data.services = data.services || {};
       Object.keys(SERVICES).forEach(function (id) { apply(id, data.services[id]); });
+      applyPhotos(data.photos);
     })
     .catch(function () { /* keep the built-in text */ });
 })();
