@@ -45,12 +45,12 @@
         </form>
       </section>
 
-      <!-- Enquiries -->
+      <!-- Signed in: enquiries and services -->
       <section id="view-inbox" hidden>
         <header class="topbar">
           <div>
             <p class="eyebrow">LUKEV Admin</p>
-            <h1>Enquiries</h1>
+            <h1 id="page-title">Enquiries</h1>
           </div>
           <div class="topbar-actions">
             <span id="who" class="muted"></span>
@@ -59,15 +59,30 @@
           </div>
         </header>
 
-        <div class="tabs" role="tablist" aria-label="Filter enquiries">
-          <button class="tab" role="tab" data-filter="new" type="button">New <span class="count" data-count="new"></span></button>
-          <button class="tab" role="tab" data-filter="handled" type="button">Handled <span class="count" data-count="handled"></span></button>
-          <button class="tab" role="tab" data-filter="all" type="button">All <span class="count" data-count="all"></span></button>
+        <nav class="mainnav" aria-label="Admin sections">
+          <button class="navtab" data-page="inbox" type="button">Enquiries</button>
+          <button class="navtab" data-page="services" type="button">Services</button>
+        </nav>
+
+        <!-- Enquiries -->
+        <div id="page-inbox">
+          <div class="tabs" role="tablist" aria-label="Filter enquiries">
+            <button class="tab" role="tab" data-filter="new" type="button">New <span class="count" data-count="new"></span></button>
+            <button class="tab" role="tab" data-filter="handled" type="button">Handled <span class="count" data-count="handled"></span></button>
+            <button class="tab" role="tab" data-filter="all" type="button">All <span class="count" data-count="all"></span></button>
+          </div>
+
+          <p id="inbox-status" class="status" role="status" aria-live="polite"></p>
+          <div id="list" class="list"></div>
+          <p id="empty" class="muted center" hidden></p>
         </div>
 
-        <p id="inbox-status" class="status" role="status" aria-live="polite"></p>
-        <div id="list" class="list"></div>
-        <p id="empty" class="muted center" hidden></p>
+        <!-- Services -->
+        <div id="page-services" hidden>
+          <p class="muted">Edit the words for each service. Changes show on the website the next time a visitor opens or refreshes the page. Reset puts back the original text.</p>
+          <p id="services-status" class="status" role="status" aria-live="polite"></p>
+          <div id="services-list" class="list"></div>
+        </div>
       </section>
     </main>
 

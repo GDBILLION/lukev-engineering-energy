@@ -38,7 +38,7 @@ h1 { margin: 0 0 4px; font-size: 1.6rem; line-height: 1.2; }
 
 label { display: block; margin: 16px 0 6px; font-size: 0.9rem; font-weight: 600; }
 
-input {
+input, textarea {
   width: 100%;
   min-height: 46px;
   padding: 10px 14px;
@@ -48,7 +48,7 @@ input {
   border-radius: 12px;
   font: inherit;
 }
-input:focus-visible, .btn:focus-visible, .tab:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input:focus-visible, textarea:focus-visible, .navtab:focus-visible, .btn:focus-visible, .tab:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .btn {
   min-height: 44px;
@@ -117,3 +117,26 @@ input:focus-visible, .btn:focus-visible, .tab:focus-visible, a:focus-visible { o
   .shell { padding: 32px 24px; }
   h1 { font-size: 1.9rem; }
 }
+
+textarea { min-height: 96px; padding: 10px 14px; resize: vertical; line-height: 1.5; }
+
+.mainnav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.navtab {
+  min-height: 44px;
+  padding: 8px 14px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.navtab[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
+
+.svc h2 { margin: 0; font-size: 1.15rem; }
+.svc .hint { margin: 2px 0 0; color: var(--muted); font-size: 0.8rem; }
+.svc .actions { align-items: center; }
+.svc .note { margin: 0; font-size: 0.85rem; color: var(--ok); }
+.svc .note.bad { color: var(--danger); }
+.svc .btn.save { color: #09090b; background: #fff; border-color: #fff; }
